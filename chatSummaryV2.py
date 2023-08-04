@@ -58,40 +58,40 @@ if __name__ == "__main__":
 
     topic = input("Enter the Topic of the YouTube video: ")
 
-    sys_message = "Summarise these excerpts of a transcript. Make it concise and relevant to the topic: " + str(topic) + ". Exclude information irrelevant to topic."
+    sys_message = "Summarise these excerpts of a transcript. Make it concise, excluding information irrelevant to the topic: " + str(topic) + " Your response should continue from your last summary"
 
     conversation = [
         {"role": "system", "content": str(sys_message)},
-        {"role": "user", "content": "Summary so far: "}
+        {"role": "assistant", "content": "Summary: None (not started)"}
     ]
 
     chunks = chunkify(str(get_video_id(url)) + '_transcript.txt', 500, 10)
-    final_summary = ""
+    summary = []
 
-    for chunk in chunks:
-        conversation.append({"role": "user", "content": chunk})
 
+
+    for i, chunk in enumerate(chunks):
+        #create user message from chunk
+        conversation.append({"role": "user", "content": "excerpt:" + str(i) +  "\n" + chunk})
+
+        #generate response
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages = conversation
         )
 
+        #extract response and add to summary
         assistant_message = response['choices'][0]['message']['content']
-        conversation[1]['content'] = conversation[1]['content'] + assistant_message + " "
-        conversation.pop()
+        summary.append(assistant_message)
 
-        summary_length = conversation[1]['content'].split()
-        if len(summary_length) > 2000:
-            final_summary = final_summary + conversation[1]['content']
-            conversation = [
-                {"role": "system", "content": str(sys_message)},
-                {"role": "user", "content": "Summary so far: "}
-                ]           
+        conversation[1]['content'] = "Previous summary: " + summary[-1]
+
+        #remove last excerpt
+        conversation.pop()
             
-    final_summary = final_summary + conversation[1]['content']
-    print(final_summary)
+    print(summary)
 
     with open(str(get_video_id(url)) + '_summary.txt', 'w') as f:
-        f.write(final_summary)
+        f.write(summary)
         f.close()
 
