@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
     topic = input("Enter the Topic of the YouTube video: ")
 
-    sys_message = "Summarise these excerpts of a transcript. Make it concise, excluding information irrelevant to the topic: " + str(topic) + " Your response should continue seamlessly from the previous summary"
+    sys_message = "Summarise these excerpts of a transcript. Make it concise, excluding information irrelevant to the topic(s): " + str(topic) + " If there is no relevant information, leave an empty reply. Continue seamlessly from the previous summary."
 
     conversation = [
         {"role": "system", "content": str(sys_message)},
@@ -88,6 +88,6 @@ if __name__ == "__main__":
         #remove last excerpt
         conversation.pop()
 
-    with open(str(get_video_id(url)) + '_summary.txt', 'a') as f:
-        f.write(summary[i])
+        with open(str(get_video_id(url)) + '_summary.txt', 'a') as f:
+            f.write(summary[i] + "\n")
 
